@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 	ifstream input(argv[1]);
 	string temp;
 	int V,E;	
-
+	cout<<"this is v0.1"<<endl;
 	
 	input>>temp;
 	input>>temp;
