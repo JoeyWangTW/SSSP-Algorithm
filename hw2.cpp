@@ -72,6 +72,7 @@ int main(int argc, char* argv[])
 	string temp;
 	int V,E;	
 	cout<<"this is v0.2"<<endl;
+	cout<<"this is v0.1"<<endl;
 	
 	input>>temp;
 	input>>temp;
