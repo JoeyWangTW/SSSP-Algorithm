@@ -1,16 +1,22 @@
 #include<iostream>
 #include<fstream>
 #include<string>
+#include<float.h>
 using namespace std;
 
 struct list{
 	int des;
 	int weight;
-	double push;
 	struct list *next;	
 };
 
-list* buildGraph(ifstream &input, list* Vx, int V, int E)
+struct VertexList{
+	int num;
+	double push;
+	struct list *next;
+};
+
+VertexList* buildGraph(ifstream &input, VertexList* Vx, int V, int E)
 {
 	string temp;	
 	for(int i=0; i<E ;i++){
@@ -22,20 +28,22 @@ list* buildGraph(ifstream &input, list* Vx, int V, int E)
 		input>>temp;
 		w=stoi(temp);
 
-		cout<<s<<":"<<e<<":"<<w<<endl;
-		if(Vx[s].push!=-1){
-			Vx[s].des=e;
-			Vx[s].weight=w;
-			Vx[s].push=-1;
+		//cout<<s<<":"<<e<<":"<<w<<endl;
+		if(Vx[s].push!=DBL_MAX){
+			Vx[s].num=s;
+			Vx[s].push=DBL_MAX;
+			list* newVertex = new list();
+			newVertex->des=e;
+			newVertex->weight=w;
+			Vx[s].next = newVertex;
 		}
 		else{
-			list *it=&Vx[s];
+			list *it=Vx[s].next;
 			while(1){
 				if(it->next==NULL){
 					list* newVertex = new list();
 					newVertex->des=e;
 					newVertex->weight=w;
-					newVertex->push=-1;
 					it->next=newVertex;
 					it=newVertex;
 					break;
@@ -48,17 +56,20 @@ list* buildGraph(ifstream &input, list* Vx, int V, int E)
 	}
 	cout<<endl;	
 	for(int i=0; i<V; i++){
-		list* check=&Vx[i];
+		list* check=Vx[i].next;
+		if(Vx[i].push!=DBL_MAX){
+			Vx[i].num=i;
+			Vx[i].push=DBL_MAX;
+			cout<<"["<<Vx[i].num<<"]"<<endl;
+			continue;
+		}
+		cout<<"["<<Vx[i].num<<"]"<<"<---";
 		while(1){
-			if(check->push==0){
-				cout<<"X:X";
-				break;
-			}
 			if(check->next==NULL){
 				cout<<check->des<<":"<<check->weight;
 				break;
 			}
-			cout<<check->des<<":"<<check->weight<<":"<<"<---";
+			cout<<check->des<<":"<<check->weight<<"<---";
 			check=check->next;
 		}
 		cout<<endl;
@@ -80,6 +91,6 @@ int main(int argc, char* argv[])
 	input>>V;
 	input>>E;
 	input>>temp;//direct?
-	list* Vx= new list[V]();
+	VertexList* Vx= new VertexList[V]();
 	Vx = buildGraph(input,Vx,V,E);
 }
