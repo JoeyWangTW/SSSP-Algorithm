@@ -22,7 +22,7 @@ void heapify(VertexList *a, int* Q, int i, int max)
 		int l = 2*i+1;
 		int r = 2*i+2;
 		int k = i;
-		if (l<max && a[Q[l]].push<a[Q[i]].push) 
+		if (l<=max && a[Q[l]].push<a[Q[i]].push) 
 			k = l;
 		if (r<max && a[Q[r]].push<a[Q[k]].push) 
 			k = r;
@@ -85,77 +85,92 @@ VertexList* buildGraph(ifstream &input, VertexList* Vx, int V, int E)
 			}
 		}			
 	}
-	cout<<endl;	
+//	cout<<endl;	
 	for(int i=0; i<V; i++){
 		list* check=Vx[i].next;
 		if(Vx[i].push!=DBL_MAX){
 			Vx[i].num=i;
 			Vx[i].push=DBL_MAX;
-			cout<<"["<<Vx[i].num<<"]"<<endl;
+//			cout<<"["<<Vx[i].num<<","<<Vx[i].push<<"]"<<endl;
 			continue;
 		}
-		cout<<"["<<Vx[i].num<<"]"<<"<---";
+//		cout<<"["<<Vx[i].num<<","<<Vx[i].push<<"]"<<"<---";
 		while(1){
 			if(check->next==NULL){
-				cout<<check->des<<":"<<check->weight;
+//				cout<<check->des<<":"<<check->weight;
 				break;
 			}
-			cout<<check->des<<":"<<check->weight<<"<---";
+//			cout<<check->des<<":"<<check->weight<<"<---";
 			check=check->next;
 		}
-		cout<<endl;
+//		cout<<endl;
 	}
 	return Vx;
 }
 
-VertexList* Dijkstra(VertexList* S,VertexList* Vx, int V)
+VertexList* Dijkstra(VertexList* Vx, int V)
 {
 	int* check = new int[V]; 
 	for(int i=0; i<V; i++)
 		check[i]=i;
 	int Q=V-1;
 	Vx[0].push=0;
-	for (int i=V/2-1; i>=0; i--) { //build heap 
-		heapify(Vx,check,i,V);
-	}
 	while(Q!=0)
 	{
 		//Extract-Min+S<-S+u
-		S[check[0]]=Vx[check[0]];
-		cout<<check[0]<<endl;
+		heapify(Vx, check, 0, Q);
 		int temp = check[0]; 
 		check[0] = check[Q];
 		check[Q] = temp;
-		Q--;
-		if(Q==0){
-			S[check[0]]=Vx[check[0]];
-			break;
-		}
-		if(S[check[Q+1]].next!=NULL){
-			list* it=S[check[Q+1]].next;
+		if(Vx[check[Q]].next!=NULL){
+			list* it=Vx[check[Q]].next;
 			while(1){
-				if(Vx[it->des].push>S[check[Q+1]].push+it->weight){
-					Vx[it->des].push=S[check[Q+1]].push+it->weight;
-					Vx[it->des].PV=check[Q+1];
+				if(Vx[it->des].push>Vx[check[Q]].push+it->weight){
+					Vx[it->des].push=Vx[check[Q]].push+it->weight;
+					Vx[it->des].PV=check[Q];
+		//			cout<<Vx[it->des].PV<<":"<<Vx[it->des].push<<endl;
 				}
 				if(it->next==NULL)
 					break;
 				it=it->next;
 			}
 		}
-		heapify(Vx, check, 0, Q);
+		Q--;
 	}
-
-	return S;	
+	return Vx;	
 }
+
+void swap(VertexList* a, int i, int j) {
+	VertexList tmp = a[j];
+	a[j] = a[i];
+	a[i] = tmp;
+}
+int partition(VertexList* a, int l, int r) {
+	swap(a,(l+r)/2,r); //pick the middle as the pivot
+	int p = l;
+	for (int i=l; i<r; i++) {
+		if (a[i].PV<=a[r].PV) {
+			swap(a,i,p);
+			p++;
+		}
+	} 
+	swap(a,p,r);
+	return p;
+}
+void quicksort(VertexList* a, int l, int r) {
+	if (l<r) {
+		int p = partition(a,l,r);
+		quicksort(a,l,p-1);
+		quicksort(a,p+1,r);
+	}
+}
+
 
 int main(int argc, char* argv[])
 {	
 	ifstream input(argv[1]);
 	string temp;
 	int V,E;	
-	cout<<"this is v0.2"<<endl;
-	cout<<"this is v0.1"<<endl;
 	
 	input>>temp;
 	input>>temp;
@@ -167,18 +182,9 @@ int main(int argc, char* argv[])
 	VertexList* Vx= new VertexList[V]();
 	Vx = buildGraph(input,Vx,V,E);
 	
-	VertexList* SSSP= new VertexList[V]();
-	SSSP = Dijkstra(SSSP,Vx,V);
-	for(int i=0; i<V; i++){
-		if(SSSP[i].next==NULL)
-			continue;
-		list* it=SSSP[i].next;
-		while(1){
-			if(SSSP[it->des].PV==i)
-				cout<<i<<","<<it->des<<","<<it->weight<<endl;
-			if(it->next==NULL)
-				break;
-			it=it->next;
-		}
+	Vx = Dijkstra(Vx,V);
+	quicksort(Vx,1,V-1);	
+	for(int i=1; i<V; i++){
+		cout<<Vx[i].PV<<","<<Vx[i].num<<","<<Vx[i].push<<endl;
 	}
 }
