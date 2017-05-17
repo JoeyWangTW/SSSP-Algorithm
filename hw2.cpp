@@ -22,7 +22,9 @@ void heapify(VertexList *a, int* Q, int i, int max)
 		int l = 2*i+1;
 		int r = 2*i+2;
 		int k = i;
-		if (l<=max && a[Q[l]].push<a[Q[i]].push) 
+		if(max == 1 && a[Q[l]].push<a[Q[i]].push)
+			k = l;
+		if (l<max && a[Q[l]].push<a[Q[i]].push) 
 			k = l;
 		if (r<max && a[Q[r]].push<a[Q[k]].push) 
 			k = r;
@@ -118,17 +120,23 @@ VertexList* Dijkstra(VertexList* Vx, int V)
 	while(Q!=0)
 	{
 		//Extract-Min+S<-S+u
-		heapify(Vx, check, 0, Q);
+		for (int i=Q/2-1; i>=0; i--) { //build heap 
+			heapify(Vx, check, i, Q);
+		}
+		//heapify(Vx, check, 0, Q);
+		//cout<<check[0]<<":"<<Vx[check[0]].push<<endl;
 		int temp = check[0]; 
 		check[0] = check[Q];
 		check[Q] = temp;
 		if(Vx[check[Q]].next!=NULL){
+			//cout<<endl<<check[Q];
 			list* it=Vx[check[Q]].next;
 			while(1){
-				if(Vx[it->des].push>Vx[check[Q]].push+it->weight){
+				if(Vx[it->des].push==DBL_MAX || Vx[it->des].push > Vx[check[Q]].push+it->weight){
 					Vx[it->des].push=Vx[check[Q]].push+it->weight;
 					Vx[it->des].PV=check[Q];
-		//			cout<<Vx[it->des].PV<<":"<<Vx[it->des].push<<endl;
+					//cout<<":"<<it->des;
+//					cout<<Vx[check[Q]].num<<"->"<<Vx[it->des].PV<<":"<<Vx[it->des].push<<endl;
 				}
 				if(it->next==NULL)
 					break;
@@ -178,12 +186,13 @@ int main(int argc, char* argv[])
 	input>>V;
 	input>>E;
 	input>>temp;//direct?
-
 	VertexList* Vx= new VertexList[V]();
 	Vx = buildGraph(input,Vx,V,E);
 	
 	Vx = Dijkstra(Vx,V);
+	
 	quicksort(Vx,1,V-1);	
+	
 	for(int i=1; i<V; i++){
 		cout<<Vx[i].PV<<","<<Vx[i].num<<","<<Vx[i].push<<endl;
 	}
